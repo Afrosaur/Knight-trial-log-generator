@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Knight Trial Log Generator</title>
+
+<style>
+:root {
+  --bg: #0b0b0f;
+  --card: #14141c;
+  --border: #23232e;
+  --accent: #9b5cff;
+  --accent-soft: rgba(155,92,255,0.15);
+  --text: #eaeaf0;
+  --muted: #9a9aa8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #161626, #050508);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.container {
+  width: 100%;
+  max-width: 820px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2.3rem;
+  color: var(--accent);
+}
+
+.header p {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 0 0 1px var(--accent-soft), 0 20px 50px rgba(0,0,0,0.6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: #0f0f17;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.field textarea {
+  resize: none;
+  height: 90px;
+}
+
+.hidden {
+  display: none;
+}
+
+.host-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button.primary {
+  background: linear-gradient(135deg, var(--accent), #6f2cff);
+  color: #fff;
+}
+
+button.secondary {
+  background: #1b1b26;
+  color: var(--text);
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.output {
+  margin-top: 22px;
+}
+
+.output textarea {
+  width: 100%;
+  height: 340px;
+  background: #0b0b12;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 16px;
+  font-family: Consolas, monospace;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>⚔️ Knight Trial Log Generator</h1>
+    <p>By samitthechamp</p>
+  </div>
+
+  <div class="card">
+
+    <div class="grid">
+      <div class="field">
+        <label>Host (Discord ID or @)</label>
+        <input id="host" placeholder="123456789012345678">
+        <div class="host-actions">
+          <button class="secondary" onclick="saveHost()">Save</button>
+          <button class="secondary" onclick="clearHost()">Clear</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Co-Host</label>
+        <input id="cohost">
+      </div>
+
+      <div class="field">
+        <label>Attendee</label>
+        <input id="attendee">
+      </div>
+
+      <div class="field">
+        <label>Result</label>
+        <select id="result" onchange="handleResultChange()">
+          <option value="Passed">Passed</option>
+          <option value="Failed">Failed</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="failedBlock">
+        <label>Failure Type</label>
+        <select id="failedType">
+          <option>ToF - 4 days CD</option>
+          <option>ToC - 7 days CD</option>
+          <option>ToC - 8 days CD</option>
+          <option>ToD - 7 days CD</option>
+          <option>ToG - 7 days CD</option>
+          <option>ToI - 7 days CD</option>
+          <option>ToT - 7 days CD</option>
+          <option>ToM - 7 days CD</option>
+          <option>ToP - 7 days CD</option>
+          <option>ToK - 7 days CD</option>
+          <option>ToJ - 7 days CD</option>
+          <option>ToB - 7 days CD</option>
+          <option>ToR - 7 days CD</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ceremony Attendees</label>
+        <input id="ceremonyAttendees">
+      </div>
+
+      <div class="field">
+        <label>Ceremony Type</label>
+        <select id="ceremonyType">
+          <option>Public</option>
+          <option>Private</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Note</label>
+        <textarea id="note"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Assessment Document Link</label>
+        <input id="assessmentLink" placeholder="https://docs.google.com/...">
+      </div>
+    </div>
+
+    <div class="output">
+      <button class="primary" onclick="generateLog()">Generate Log</button>
+      <textarea id="output" readonly></textarea>
+    </div>
+
+    <div class="footer-actions">
+      <button class="primary" onclick="copyLog()">Copy to Clipboard</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+window.onload = () => {
+  const savedHost = localStorage.getItem("savedHost");
+  if (savedHost) host.value = savedHost;
+};
+
+function saveHost() {
+  if (!host.value) return alert("Enter host first.");
+  localStorage.setItem("savedHost", host.value);
+  alert("Host saved.");
+}
+
+function clearHost() {
+  localStorage.removeItem("savedHost");
+  host.value = "";
+  alert("Saved host cleared.");
+}
+
+function formatHostPing(value) {
+  if (/^\d{17,20}$/.test(value)) {
+    return `<@${value}>`;
+  }
+  return value;
+}
+
+function handleResultChange() {
+  const ceremonyType = document.getElementById("ceremonyType");
+  const failedBlock = document.getElementById("failedBlock");
+
+  if (result.value === "Failed") {
+    failedBlock.classList.remove("hidden");
+    ceremonyType.innerHTML = `<option>None</option>`;
+    ceremonyType.disabled = true;
+  } else {
+    failedBlock.classList.add("hidden");
+    ceremonyType.innerHTML = `
+      <option>Public</option>
+      <option>Private</option>`;
+    ceremonyType.disabled = false;
+  }
+}
+
+function generateLog() {
+  const date = new Date().toLocaleDateString('en-GB');
+  const link = assessmentLink.value || 'N/A';
+  const hostPing = formatHostPing(host.value || 'N/A');
+
+  let failedText = '';
+  if (result.value === 'Failed') {
+    failedText = `Failed:
+  (${failedType.value})
+`;
+  }
+
+  output.value =
+`Host: ${hostPing}
+Co-Host: ${cohost.value || 'N/A'}
+Attendee: ${attendee.value || 'N/A'}
+Result: ${result.value}
+${failedText}Ceremony Attendees: ${ceremonyAttendees.value || 'N/A'}
+Ceremony Private or Public: ${ceremonyType.value}
+Note: ${note.value || 'None'}
+Date: ${date}
+Ping: @Sith Alchemist
+
+${link}`;
+}
+
+function copyLog() {
+  output.select();
+  document.execCommand("copy");
+  alert("Copied. Paste into Discord.");
+}
+</script>
+
+</body>
+</html>
